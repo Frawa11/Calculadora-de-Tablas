@@ -77,12 +77,12 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
       const result = await Filesystem.writeFile({
         path: fileName,
         data: csvContent,
-        directory: Directory.Downloads, // Saves to the user's public Downloads folder
+        directory: Directory.Documents, // Saves to the user's Documents folder
         encoding: Encoding.UTF8,
         recursive: true, // Create parent directories if they don't exist
       });
 
-      alert(`Archivo guardado con éxito en la carpeta de Descargas: ${fileName}`);
+      alert(`Archivo guardado con éxito en la carpeta de Documentos: ${fileName}`);
 
     } catch (e) {
       console.error('No se pudo guardar el archivo', e);
