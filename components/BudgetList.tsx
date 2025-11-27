@@ -54,6 +54,7 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
       ];
 
       // 4. Construct CSV Content
+      // Using comma (,) as standard CSV delimiter.
       const csvContent = "\uFEFF" + [
         headers.join(","),
         ...rows.map(e => e.join(",")),
