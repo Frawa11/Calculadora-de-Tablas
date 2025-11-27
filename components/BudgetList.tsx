@@ -79,6 +79,7 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
         data: csvContent,
         directory: Directory.Downloads, // Saves to the user's public Downloads folder
         encoding: Encoding.UTF8,
+        recursive: true, // Create parent directories if they don't exist
       });
 
       alert(`Archivo guardado con éxito en la carpeta de Descargas: ${fileName}`);
