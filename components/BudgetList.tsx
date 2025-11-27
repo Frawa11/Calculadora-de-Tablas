@@ -19,48 +19,59 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
   const totalCost = items.reduce((acc, item) => acc + item.result.totalCost, 0);
 
   const exportToExcel = async () => {
-    // 1. Define Headers
-    const headers = [
-      "ID",
-      "Largo (Valor)", "Largo (Unidad)",
-      "Ancho (Valor)", "Ancho (Unidad)",
-      "Grosor (Valor)", "Grosor (Unidad)",
-      "Precio Unitario (S/.)",
-      "Pies Tabla (BF)",
-      "Metros Cúbicos (m3)",
-      "Costo Total (S/.)"
-    ];
-
-    // 2. Map Data Rows
-    const rows = items.map((item, index) => [
-      index + 1,
-      item.dimensions.length, item.dimensions.lengthUnit,
-      item.dimensions.width, item.dimensions.widthUnit,
-      item.dimensions.thickness, item.dimensions.thicknessUnit,
-      item.dimensions.price,
-      item.result.boardFeet.toFixed(2),
-      item.result.cubicMeters.toFixed(6),
-      item.result.totalCost.toFixed(2)
-    ]);
-
-    // 3. Add Summary Row
-    const summaryRow = [
-      "", "", "", "", "", "", "TOTALES:", "",
-      totalBF.toFixed(2),
-      totalM3.toFixed(6),
-      totalCost.toFixed(2)
-    ];
-
-    // 4. Construct CSV Content
-    // Note: \uFEFF is the BOM (Byte Order Mark) to force Excel to read it as UTF-8 (fixes accents/currency)
-    const csvContent = "\uFEFF" + [
-      headers.join(","),
-      ...rows.map(e => e.join(",")),
-      summaryRow.join(",")
-    ].join("\n");
-
-    // 5. Save file to device using Capacitor Filesystem
     try {
+      // Check and request permissions first
+      let permStatus = await Filesystem.checkPermissions();
+
+      if (permStatus.publicStorage !== 'granted') {
+        permStatus = await Filesystem.requestPermissions();
+      }
+
+      if (permStatus.publicStorage !== 'granted') {
+        alert('Permiso de almacenamiento no concedido. No se puede guardar el archivo.');
+        return;
+      }
+
+      // 1. Define Headers
+      const headers = [
+        "ID",
+        "Largo (Valor)", "Largo (Unidad)",
+        "Ancho (Valor)", "Ancho (Unidad)",
+        "Grosor (Valor)", "Grosor (Unidad)",
+        "Precio Unitario (S/.)",
+        "Pies Tabla (BF)",
+        "Metros Cúbicos (m3)",
+        "Costo Total (S/.)"
+      ];
+
+      // 2. Map Data Rows
+      const rows = items.map((item, index) => [
+        index + 1,
+        item.dimensions.length, item.dimensions.lengthUnit,
+        item.dimensions.width, item.dimensions.widthUnit,
+        item.dimensions.thickness, item.dimensions.thicknessUnit,
+        item.dimensions.price,
+        item.result.boardFeet.toFixed(2),
+        item.result.cubicMeters.toFixed(6),
+        item.result.totalCost.toFixed(2)
+      ]);
+
+      // 3. Add Summary Row
+      const summaryRow = [
+        "", "", "", "", "", "", "TOTALES:", "",
+        totalBF.toFixed(2),
+        totalM3.toFixed(6),
+        totalCost.toFixed(2)
+      ];
+
+      // 4. Construct CSV Content
+      const csvContent = "\uFEFF" + [
+        headers.join(","),
+        ...rows.map(e => e.join(",")),
+        summaryRow.join(",")
+      ].join("\n");
+
+      // 5. Save file to device using Capacitor Filesystem
       const fileName = `Presupuesto_Madera_${new Date().toISOString().slice(0,10)}.csv`;
       
       const result = await Filesystem.writeFile({
