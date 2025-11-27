@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: List files in workspace
-        run: ls -R
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -43,10 +40,10 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x android/gradlew
 
-      - name: Build Android Bundle (Release - Signed)
+      - name: Build AAB and APK (Release - Signed)
         run: |
           cd android
-          ./gradlew bundleRelease \
+          ./gradlew bundleRelease assembleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/app/my-release-key.keystore \
             -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
@@ -55,5 +52,11 @@ jobs:
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-signed
+          name: app-release-signed-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-signed-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
