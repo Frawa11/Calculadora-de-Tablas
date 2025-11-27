@@ -3,6 +3,7 @@ import React from 'react';
 import { BudgetItem, ThemeColor } from '../types';
 import { Trash2, FileSpreadsheet, Download } from 'lucide-react';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 interface BudgetListProps {
   items: BudgetItem[];
@@ -20,18 +21,6 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
 
   const exportToExcel = async () => {
     try {
-      // Check and request permissions first
-      let permStatus = await Filesystem.checkPermissions();
-
-      if (permStatus.publicStorage !== 'granted') {
-        permStatus = await Filesystem.requestPermissions();
-      }
-
-      if (permStatus.publicStorage !== 'granted') {
-        alert('Permiso de almacenamiento no concedido. No se puede guardar el archivo.');
-        return;
-      }
-
       // 1. Define Headers
       const headers = [
         "ID",
@@ -71,23 +60,29 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
         summaryRow.join(",")
       ].join("\n");
 
-      // 5. Save file to device using Capacitor Filesystem
-      const fileName = `Presupuesto_Madera_${new Date().toISOString().slice(0,10)}.csv`;
-      
+      // 5. Save file to Cache (no permissions needed)
+      const fileName = `Presupuesto_Madera_${new Date().toISOString().slice(0, 10)}.csv`;
+
       const result = await Filesystem.writeFile({
         path: fileName,
         data: csvContent,
-        directory: Directory.Documents, // Saves to the user's Documents folder
+        directory: Directory.Cache,
         encoding: Encoding.UTF8,
-        recursive: true, // Create parent directories if they don't exist
+        recursive: true,
       });
 
-      alert(`Archivo guardado con éxito en la carpeta de Documentos: ${fileName}`);
+      // 6. Share the file
+      await Share.share({
+        title: 'Compartir Presupuesto',
+        text: 'Adjunto encontrarás el presupuesto de madera exportado.',
+        url: result.uri,
+        dialogTitle: 'Guardar o Compartir CSV',
+      });
 
     } catch (e) {
-      console.error('No se pudo guardar el archivo', e);
+      console.error('Error al exportar', e);
       const errorMessage = e instanceof Error ? e.message : String(e);
-      alert(`Error al guardar: ${errorMessage}`);
+      alert(`Error al exportar: ${errorMessage}`);
     }
   };
 
