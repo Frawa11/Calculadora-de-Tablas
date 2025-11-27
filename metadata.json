@@ -1,0 +1,5 @@
+{
+  "name": "Calculadora de Tablas",
+  "description": "Una calculadora profesional para carpintería que estima Pies Tabla (BF), Metros Cúbicos y costos totales basados en dimensiones en pulgadas.",
+  "requestFramePermissions": []
+}
