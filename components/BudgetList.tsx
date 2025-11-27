@@ -2,6 +2,7 @@
 import React from 'react';
 import { BudgetItem, ThemeColor } from '../types';
 import { Trash2, FileSpreadsheet, Download } from 'lucide-react';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 interface BudgetListProps {
   items: BudgetItem[];
@@ -17,7 +18,7 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
   const totalM3 = items.reduce((acc, item) => acc + item.result.cubicMeters, 0);
   const totalCost = items.reduce((acc, item) => acc + item.result.totalCost, 0);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     // 1. Define Headers
     const headers = [
       "ID",
@@ -58,15 +59,23 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
       summaryRow.join(",")
     ].join("\n");
 
-    // 5. Trigger Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Presupuesto_Madera_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // 5. Save file to device using Capacitor Filesystem
+    try {
+      const fileName = `Presupuesto_Madera_${new Date().toISOString().slice(0,10)}.csv`;
+      
+      const result = await Filesystem.writeFile({
+        path: fileName,
+        data: csvContent,
+        directory: Directory.Documents, // Saves to the user's Documents folder
+        encoding: Encoding.UTF8,
+      });
+
+      alert(`Archivo guardado con éxito en la carpeta de Documentos: ${fileName}`);
+
+    } catch (e) {
+      console.error('No se pudo guardar el archivo', e);
+      alert('Error: No se pudo guardar el archivo. Asegúrate de tener permisos para escribir en el almacenamiento.');
+    }
   };
 
   const themeStyles = {
