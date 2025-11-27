@@ -85,7 +85,8 @@ export const BudgetList: React.FC<BudgetListProps> = ({ items, onDelete, theme }
 
     } catch (e) {
       console.error('No se pudo guardar el archivo', e);
-      alert('Error: No se pudo guardar el archivo. Asegúrate de tener permisos para escribir en el almacenamiento.');
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      alert(`Error al guardar: ${errorMessage}`);
     }
   };
 
